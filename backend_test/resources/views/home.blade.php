@@ -11,8 +11,7 @@
     <div class="container">
     @if (session('name'))
             <div class="thank-you-message">
-                <h2>Thank You, {{ session('name') }}!</h2>
-                <p>Thank you for registering. We are glad to have you with us.</p>
+            <a href="{{ url('/register') }}" class="register-button">Go to Register</a>
             </div>
         @endif
     </div>

@@ -2,10 +2,13 @@
 
 
 namespace App\Http\Controllers\Auth;
+
 use App\Http\Controllers\Controller;
+use App\Mail\SendEmail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
@@ -17,21 +20,26 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
+        // Validate the registration data
         $this->validator($request->all())->validate();
 
+        // Create user
         $user = $this->create($request->all());
 
-        // You may want to log the user in or redirect to a specific page
-        // Auth::login($user);
+        // Send Thank You email
+        Mail::to($user->email)->send(new SendEmail($user->name));
 
-        return redirect('/')->with('name', $user->name);
+        // Optional: Log the user in
+        // Auth::login($user);
+        session(['name' => $user->name]);
+        return redirect()->route('thank.you');
     }
 
     protected function validator(array $data)
     {
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'telephone' => ['required', 'numeric', 'min:11'],
             'add1' => ['required', 'string', 'max:255'],
             'add2' => ['required', 'string', 'max:255'],
@@ -58,6 +66,9 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
         ]);
     }
-    
-}
 
+    public function showThankYou()
+    {
+        return view('auth.thankyou');
+    }
+}
